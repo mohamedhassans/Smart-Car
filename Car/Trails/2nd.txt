@@ -1,0 +1,32 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+-- Declare the input and output signals
+entity car_control is
+    Port ( clock : in  STD_LOGIC;
+           lane_sensor : in  STD_LOGIC;
+           infrared_sensor : in  STD_LOGIC;
+           motor_control : out  STD_LOGIC);
+end car_control;
+
+-- Define the behavior of the car control logic
+architecture Behavioral of car_control is
+begin
+    -- Determine the appropriate control signal for the motor based on the sensor inputs
+    process (clock)
+    begin
+        if (clock'event and clock = '1') then
+            -- If the car is within its lane and there is no obstacle, allow the car to move
+            if (lane_sensor = '0' and infrared_sensor = '0') then
+                motor_control <= '1';
+            -- If the car is outside its lane, display a warning and stop the car
+            elsif (lane_sensor = '1') then
+                motor_control <= '0';
+                -- Display warning message on 7 segment display
+            -- If there is an obstacle in front of the car, stop the car
+            elsif (infrared_sensor = '1') then
+                motor_control <= '0';
+            end if;
+        end if;
+    end process;
+end Behavioral;

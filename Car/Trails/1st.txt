@@ -1,0 +1,76 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity self_driving_car is
+    port (
+        clk: in std_logic;
+        reset: in std_logic;
+        obstacle_ir: in std_logic;
+        lane_sensor: in std_logic;
+        motor: out std_logic;
+        display: out std_logic_vector(3 downto 0)
+    );
+end self_driving_car;
+
+architecture Behavioral of self_driving_car is
+    signal lane_drift: std_logic;
+    signal speed: integer range 0 to 100;
+begin
+    -- Debounce the obstacle IR sensor input
+    process (clk, reset)
+    begin
+        if reset = '1' then
+            lane_drift <= '0';
+        elsif rising_edge(clk) then
+            if obstacle_ir = '0' then
+                lane_drift <= '1';
+            end if;
+        end if;
+    end process;
+    
+    -- Debounce the lane sensor input
+    process (clk, reset)
+    begin
+        if reset = '1' then
+            lane_drift <= '0';
+        elsif rising_edge(clk) then
+            if lane_sensor = '0' then
+                lane_drift <= '1';
+            end if;
+        end if;
+    end process;
+    
+    -- Control the motor based on the obstacle and lane drift signals
+    process (clk, reset)
+    begin
+        if reset = '1' then
+            motor <= '0';
+            speed <= 0;
+        elsif rising_edge(clk) then
+            if obstacle_ir = '1' then
+                motor <= '0';
+                speed <= 0;
+            elsif lane_drift = '1' then
+                motor <= '1';
+                speed <= 50;
+            else
+                motor <= '1';
+                speed <= 100;
+            end if;
+        end if;
+    end process;
+    
+    -- Display the "ALERT" message on the 7 segment display
+    -- if the car is drifting outside of its lane
+    process (clk, reset)
+    begin
+        if reset = '1' then
+            display <= "0000";
+        elsif rising_edge(clk) then
+            if lane_drift = '1' then
+                display <= "1000" & "0000";
+            end if;
+        end if;
+    end process;
+end Behavioral;
